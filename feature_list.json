@@ -1,6 +1,14 @@
 {
   "project": "e2e-sauce-demo",
   "description": "Suite E2E (UI + API) de https://sauce-demo.myshopify.com guiada por specs y construida por agentes de IA.",
+  "epic": "Como stakeholder de la tienda quiero una suite E2E automatizada (UI + API) para detectar regresiones antes de cada release.",
+  "scrum": {
+    "planning_source": "GitHub Issues: una historia = un issue; entra al sprint con la etiqueta 'sprint' (o el milestone del sprint). Lo decide el PO en el sprint planning.",
+    "link_field": "issue (número del issue de GitHub; null = aún no planificada)",
+    "spec_approval_field": "spec_approved_by (quién aprobó la spec; null = pendiente). Lo rellena el PO o el workflow al poner la etiqueta 'spec-approved'.",
+    "status_labels": "Las etiquetas status:<estado> del issue solo reflejan feature_list.json; las actualiza el leader, nadie a mano.",
+    "done_means": "approved = review APPROVED y PR abierto; done = PR mergeado (lo marca el humano o el workflow de merge)."
+  },
   "target": {
     "base_url": "https://sauce-demo.myshopify.com",
     "api_endpoints": ["/products.json", "/products/<handle>.js", "/cart.js", "/cart/add.js", "/cart/change.js", "/cart/clear.js"],
@@ -14,9 +22,10 @@
     "one_active_feature": true,
     "spec_before_tests": true,
     "require_review_to_close": true,
-    "require_human_spec_approval": false,
+    "require_human_spec_approval": true,
+    "max_specs_awaiting_approval": 2,
     "max_fix_loops": 2,
-    "valid_status": ["pending", "spec_ready", "in_progress", "in_review", "done", "blocked"]
+    "valid_status": ["pending", "spec_ready", "in_progress", "in_review", "approved", "done", "blocked"]
   },
   "features": [
     {
@@ -25,6 +34,9 @@
       "tag": "NAV",
       "type": "ui",
       "title": "Smoke de navegación",
+      "story": "Como PO quiero que la navegación principal esté cubierta por E2E para saber al instante si una release rompe el menú.",
+      "issue": null,
+      "spec_approved_by": null,
       "description": "La home carga y los enlaces principales del header llevan a su página.",
       "acceptance": [
         "La home responde y muestra el título/logo de la tienda",
@@ -39,6 +51,9 @@
       "tag": "PAPI",
       "type": "api",
       "title": "Contrato de la API de productos",
+      "story": "Como PO quiero validar el contrato de la API de productos para que un cambio de datos no rompa el catálogo sin que nadie lo note.",
+      "issue": null,
+      "spec_approved_by": null,
       "description": "Valida /products.json y /products/<handle>.js como contrato de datos.",
       "acceptance": [
         "/products.json responde 200 con un array de productos con id, title, handle y variants",
@@ -54,6 +69,9 @@
       "tag": "CAT",
       "type": "ui+api",
       "title": "Catálogo y ficha de producto",
+      "story": "Como comprador quiero ver en el catálogo y en la ficha los mismos productos y precios que ofrece la tienda para decidir mi compra con datos correctos.",
+      "issue": null,
+      "spec_approved_by": null,
       "description": "El catálogo muestra los productos de la API y la ficha de producto muestra sus datos.",
       "acceptance": [
         "/collections/all muestra los mismos productos que /products.json",
@@ -69,6 +87,9 @@
       "tag": "SRCH",
       "type": "ui",
       "title": "Búsqueda",
+      "story": "Como comprador quiero buscar productos por nombre para encontrar rápido lo que quiero.",
+      "issue": null,
+      "spec_approved_by": null,
       "description": "Búsqueda de productos desde /search.",
       "acceptance": [
         "Buscar 'jacket' devuelve los productos con jacket en el título",
@@ -83,6 +104,9 @@
       "tag": "CART",
       "type": "ui+api",
       "title": "Carrito",
+      "story": "Como comprador quiero añadir, cambiar y quitar productos del carrito para preparar mi pedido.",
+      "issue": null,
+      "spec_approved_by": null,
       "description": "Añadir, modificar y eliminar productos del carrito, verificando el estado vía /cart.js.",
       "acceptance": [
         "Añadir un producto disponible desde la ficha incrementa el contador y /cart.js lo refleja",
@@ -99,6 +123,9 @@
       "tag": "AUTH",
       "type": "ui",
       "title": "Validación de login y registro",
+      "story": "Como comprador quiero recibir errores claros al iniciar sesión o registrarme con datos inválidos para saber qué corregir.",
+      "issue": null,
+      "spec_approved_by": null,
       "description": "Caminos negativos de /account/login y /account/register, sin crear cuentas.",
       "acceptance": [
         "Login con credenciales inválidas muestra un error y no autentica",
@@ -113,6 +140,9 @@
       "tag": "CHK",
       "type": "ui",
       "title": "Entrada al checkout",
+      "story": "Como comprador quiero pasar del carrito al checkout para poder completar mi compra.",
+      "issue": null,
+      "spec_approved_by": null,
       "description": "Desde un carrito con producto se llega a la página de checkout de Shopify. Nunca se paga.",
       "acceptance": [
         "Con un producto en el carrito, el botón Check Out lleva a la URL de checkout",

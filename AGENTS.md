@@ -39,21 +39,22 @@ guiada por **specs Gherkin-like** y construida por un pipeline de agentes.
 
 ## 3. Reglas duras (no negociables)
 
-- **Una feature activa a la vez** (`in_progress` / `in_review`).
-- **Spec antes que tests.** Sin `specs/<name>.md` no hay tests.
+- **Una feature activa a la vez** (`in_progress` / `in_review` / `approved`).
+- **Solo historias del sprint backlog** (feature con `issue`; lo planifica el PO).
+- **Spec antes que tests.** Sin `specs/<name>.md` aprobada (`spec_approved_by`) no hay tests.
 - **Trazabilidad 1:1.** Cada escenario `TAG-NN` tiene un test con `@TAG-NN`;
   ningún test referencia un ID inexistente. `init.mjs` lo comprueba.
-- **Nada es `done` sin review `APPROVED`** y `init.mjs` verde.
+- **Nada es `approved` sin review `APPROVED`** y `init.mjs` verde; `done` = PR mergeado.
 - **Respeta el sitio:** no crear cuentas, no pagar, workers ≤ 2.
 - **Si no sabes algo, busca en `docs/`** antes de inventarlo.
 
 ## 4. Máquina de estados
 
 ```
-pending ──spec-writer──▶ spec_ready ──test-implementer──▶ in_progress
+pending ──spec-writer──▶ spec_ready ──(PO aprueba)──test-implementer──▶ in_progress
                                                             │  red ▶ failure-triager ▶ (fix loop)
                                                             ▼ green
-                                                         in_review ──test-reviewer──▶ done
+                                                         in_review ──test-reviewer──▶ approved ──merge──▶ done
 cualquier estado ──(bloqueo / max_fix_loops)──▶ blocked
 ```
 

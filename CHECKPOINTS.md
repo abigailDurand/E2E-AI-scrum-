@@ -12,9 +12,11 @@
 
 ## C2 — El estado es coherente
 
-- [ ] ⚙ Como mucho una feature en `in_progress` / `in_review`.
+- [ ] ⚙ Como mucho una feature en `in_progress` / `in_review` / `approved`.
 - [ ] ⚙ Toda feature desde `spec_ready` tiene `specs/<name>.md`.
-- [ ] ⚙ Toda feature `done` tiene `progress/review_<name>.md` con `APPROVED`.
+- [ ] ⚙ Toda feature desde `in_progress` tiene `spec_approved_by` (si la regla está activa).
+- [ ] ⚙ No hay más de `max_specs_awaiting_approval` specs esperando al PO.
+- [ ] ⚙ Toda feature `approved` / `done` tiene `progress/review_<name>.md` con `APPROVED`.
 - [ ] `progress/current.md` describe la sesión activa o está en plantilla.
 
 ## C3 — Las specs son ejecutables
@@ -26,7 +28,7 @@
 
 ## C4 — Trazabilidad spec ⇄ test
 
-- [ ] ⚙ Toda feature `in_review` / `done` tiene un test por escenario (`@TAG-NN`).
+- [ ] ⚙ Toda feature `in_review` / `approved` / `done` tiene un test por escenario (`@TAG-NN`).
 - [ ] ⚙ No hay tests huérfanos (tags que no existen en ninguna spec).
 - [ ] Cada test verifica lo que dice su **Entonces**, no algo más débil.
 

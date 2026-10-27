@@ -29,10 +29,13 @@ if (STOP_HOOK) {
   }
 }
 
-const STATUSES = ["pending", "spec_ready", "in_progress", "in_review", "done", "blocked"];
-const ACTIVE = ["in_progress", "in_review"];
-const NEEDS_SPEC = ["spec_ready", "in_progress", "in_review", "done"];
-const NEEDS_FULL_TRACE = ["in_review", "done"];
+const STATUSES = ["pending", "spec_ready", "in_progress", "in_review", "approved", "done", "blocked"];
+// approved cuenta como activa: el PR sigue abierto hasta el merge.
+const ACTIVE = ["in_progress", "in_review", "approved"];
+const NEEDS_SPEC = ["spec_ready", "in_progress", "in_review", "approved", "done"];
+const NEEDS_FULL_TRACE = ["in_review", "approved", "done"];
+const NEEDS_REVIEW = ["approved", "done"];
+const NEEDS_SPEC_APPROVAL = ["in_progress", "in_review", "approved", "done"];
 const BASE_FILES = [
   "AGENTS.md",
   "CLAUDE.md",
@@ -129,7 +132,9 @@ else ok(`${BASE_FILES.length} archivos base presentes`);
 section("3. feature_list.json");
 let features = [];
 try {
-  features = JSON.parse(read("feature_list.json")).features ?? [];
+  const backlog = JSON.parse(read("feature_list.json"));
+  const rules = backlog.rules ?? {};
+  features = backlog.features ?? [];
   const seen = { id: new Set(), name: new Set(), tag: new Set() };
   for (const f of features) {
     for (const key of ["id", "name", "tag", "status"]) {
@@ -143,17 +148,28 @@ try {
     if (NEEDS_SPEC.includes(f.status) && !existsSync(`specs/${f.name}.md`)) {
       fail(`Feature ${f.id} (${f.status}) no tiene spec: specs/${f.name}.md`);
     }
-    if (f.status === "done") {
+    if (NEEDS_REVIEW.includes(f.status)) {
       const review = `progress/review_${f.name}.md`;
-      if (!existsSync(review)) fail(`Feature ${f.id} está done sin ${review}`);
+      if (!existsSync(review)) fail(`Feature ${f.id} está ${f.status} sin ${review}`);
       else if (!/\*\*Veredicto:\*\*\s*APPROVED/.test(read(review))) {
-        fail(`Feature ${f.id} está done pero ${review} no dice APPROVED`);
+        fail(`Feature ${f.id} está ${f.status} pero ${review} no dice APPROVED`);
       }
+    }
+    if (f.issue != null && !Number.isInteger(f.issue)) {
+      fail(`Feature ${f.id}: "issue" debe ser un número de issue o null`);
+    }
+    if (rules.require_human_spec_approval && NEEDS_SPEC_APPROVAL.includes(f.status) && !f.spec_approved_by) {
+      fail(`Feature ${f.id} está ${f.status} sin spec aprobada (spec_approved_by vacío)`);
     }
   }
   const active = features.filter((f) => ACTIVE.includes(f.status));
   if (active.length > 1) {
     fail(`Hay ${active.length} features activas (${active.map((f) => f.id).join(", ")}); máximo 1`);
+  }
+  const awaiting = features.filter((f) => f.status === "spec_ready" && !f.spec_approved_by);
+  const maxAwaiting = rules.max_specs_awaiting_approval ?? Infinity;
+  if (rules.require_human_spec_approval && awaiting.length > maxAwaiting) {
+    fail(`Hay ${awaiting.length} specs esperando aprobación (${awaiting.map((f) => f.id).join(", ")}); máximo ${maxAwaiting}`);
   }
   const counts = STATUSES.map((s) => `${s}=${features.filter((f) => f.status === s).length}`);
   ok(`${features.length} features (${counts.join(" ")})`);

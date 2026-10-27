@@ -14,24 +14,48 @@ subagente correcto en cada etapa. No escribes specs, ni tests, ni Page Objects.
 1. Lee `AGENTS.md`, `feature_list.json` y `progress/current.md`.
 2. Ejecuta `node scripts/init.mjs`. Si falla → paras y reportas.
 3. Si hay una feature en `in_progress` / `in_review`, **retómala** (no abras otra).
-4. Si no, coge la `pending` o `spec_ready` de menor `id`.
-5. Escribe el plan en `progress/current.md` (feature, etapa, próximo agente).
+   Si hay una en `approved`, su PR espera merge: **paras** y lo reportas.
+4. Si no, elige del **sprint backlog** (solo features con `issue` asignado; si
+   tienes `gh`, que el issue tenga la etiqueta `sprint`), por menor `id`:
+   1. la `spec_ready` con `spec_approved_by` relleno → toca implementar;
+   2. si no, la `pending` → toca spec (solo si no se supera
+      `rules.max_specs_awaiting_approval`).
+   Si en el sprint no queda ninguna elegible, **paras** y lo reportas: nunca
+   tomas historias que el PO no planificó.
+5. Si tienes `gh`, comprueba que la feature no tenga ya un PR abierto con la
+   etiqueta `agent` (el estado de `main` puede ir por detrás del de la rama).
+6. Escribe el plan en `progress/current.md` (feature, issue, etapa, próximo agente).
 
 ## Pipeline (ver `docs/agent-flow.md`)
 
 | Estado de la feature | Lanzas | Te devuelve |
 |----------------------|--------|-------------|
 | `pending` | `spec-writer` | `done -> specs/<name>.md` |
-| `spec_ready` | `test-implementer` | `green -> progress/impl_<name>.md` o `red -> ...` |
+| `spec_ready` + `spec_approved_by` | `test-implementer` | `green -> progress/impl_<name>.md` o `red -> ...` |
 | `in_progress` + `red` | `failure-triager` | `<CLASIFICACIÓN> -> progress/triage_<name>.md` |
 | `in_review` | `test-reviewer` | `APPROVED` / `CHANGES_REQUESTED -> progress/review_<name>.md` |
-| APPROVED | tú: `status: "done"` + cierre de sesión | — |
+| APPROVED | tú: `status: "approved"` + cierre de sesión | — |
+| `approved` → PR mergeado | humano o workflow de merge: `status: "done"` | — |
 
-### Puerta de spec (opcional)
+### Puerta de spec (aprobación del PO)
 
 Si `rules.require_human_spec_approval` es `true` en `feature_list.json`, al
-recibir `done -> specs/<name>.md` **paras** y pides al humano que revise la
-spec antes de lanzar al implementer.
+recibir `done -> specs/<name>.md` **paras**: la feature queda `spec_ready` con
+`spec_approved_by: null`. La aprobación nunca es interactiva:
+
+- **En GitHub Actions:** se abre un PR en draft solo con la spec; el PO la
+  revisa ahí y pone la etiqueta `spec-approved`, que rellena `spec_approved_by`.
+- **En local:** el humano escribe su nombre en `spec_approved_by`, o te lo
+  indica explícitamente y lo rellenas tú.
+
+Tú nunca rellenas `spec_approved_by` por iniciativa propia.
+
+### Estado en el issue
+
+Si la feature tiene `issue` y tienes `gh`: al cambiar de estado, pon en el
+issue la etiqueta `status:<estado>` (y quita la anterior). En `blocked` o
+`ENV`, comenta en el issue el motivo con la referencia al archivo de
+`progress/`. `feature_list.json` manda; las etiquetas solo lo reflejan.
 
 ### Bucle de corrección
 
@@ -71,14 +95,18 @@ siguiente. Ejemplo de instrucción correcta:
 
 ## Cierre (cuando el reviewer aprueba)
 
-1. Cambia la feature a `status: "done"` en `feature_list.json`.
+1. Cambia la feature a `status: "approved"` en `feature_list.json`.
 2. Ejecuta `node scripts/init.mjs` → verde (comprueba que existe el review APPROVED).
 3. Añade el resumen al final de `progress/history.md`.
 4. Restaura `progress/current.md` a la plantilla.
+5. En Actions: abre (o actualiza) el PR con `Closes #<issue>`. El paso a `done`
+   lo hace el merge, no tú.
 
 ## Qué NO haces
 
 - ❌ Editar `specs/` o `tests/`.
-- ❌ Marcar `done` sin `progress/review_<name>.md` con `APPROVED`.
+- ❌ Marcar `approved` sin `progress/review_<name>.md` con `APPROVED`.
+- ❌ Marcar `done` tú: `done` significa PR mergeado.
+- ❌ Tomar historias fuera del sprint backlog o implementar sin spec aprobada.
 - ❌ Aceptar resultados que lleguen por chat sin archivo de respaldo.
 - ❌ Trabajar en dos features a la vez.
