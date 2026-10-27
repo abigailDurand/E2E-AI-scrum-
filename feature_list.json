@@ -1,0 +1,125 @@
+{
+  "project": "e2e-sauce-demo",
+  "description": "Suite E2E (UI + API) de https://sauce-demo.myshopify.com guiada por specs y construida por agentes de IA.",
+  "target": {
+    "base_url": "https://sauce-demo.myshopify.com",
+    "api_endpoints": ["/products.json", "/products/<handle>.js", "/cart.js", "/cart/add.js", "/cart/change.js", "/cart/clear.js"],
+    "constraints": [
+      "Sitio público de terceros: sin pruebas de carga, workers <= 2",
+      "No crear cuentas reales: solo caminos negativos/validación en login y registro",
+      "No completar pagos: el checkout se prueba solo hasta la entrada en la página de checkout"
+    ]
+  },
+  "rules": {
+    "one_active_feature": true,
+    "spec_before_tests": true,
+    "require_review_to_close": true,
+    "require_human_spec_approval": false,
+    "max_fix_loops": 2,
+    "valid_status": ["pending", "spec_ready", "in_progress", "in_review", "done", "blocked"]
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "smoke_navigation",
+      "tag": "NAV",
+      "type": "ui",
+      "title": "Smoke de navegación",
+      "description": "La home carga y los enlaces principales del header llevan a su página.",
+      "acceptance": [
+        "La home responde y muestra el título/logo de la tienda",
+        "Catalog, Blog, About Us, Search y Cart son navegables desde el header",
+        "Cada página destino muestra un encabezado o contenido identificable"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 2,
+      "name": "products_api",
+      "tag": "PAPI",
+      "type": "api",
+      "title": "Contrato de la API de productos",
+      "description": "Valida /products.json y /products/<handle>.js como contrato de datos.",
+      "acceptance": [
+        "/products.json responde 200 con un array de productos con id, title, handle y variants",
+        "Cada variante tiene id, price y available",
+        "/products/<handle>.js devuelve el mismo producto que el listado",
+        "Un handle inexistente responde 404"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 3,
+      "name": "catalog_ui",
+      "tag": "CAT",
+      "type": "ui+api",
+      "title": "Catálogo y ficha de producto",
+      "description": "El catálogo muestra los productos de la API y la ficha de producto muestra sus datos.",
+      "acceptance": [
+        "/collections/all muestra los mismos productos que /products.json",
+        "La ficha muestra título, precio y botón de compra",
+        "Un producto agotado se muestra como no disponible",
+        "La moneda/precio mostrado en UI es coherente con la API (documentar la regla observada)"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 4,
+      "name": "search",
+      "tag": "SRCH",
+      "type": "ui",
+      "title": "Búsqueda",
+      "description": "Búsqueda de productos desde /search.",
+      "acceptance": [
+        "Buscar 'jacket' devuelve los productos con jacket en el título",
+        "Una búsqueda sin coincidencias muestra un mensaje claro",
+        "La búsqueda no distingue mayúsculas/minúsculas"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 5,
+      "name": "cart",
+      "tag": "CART",
+      "type": "ui+api",
+      "title": "Carrito",
+      "description": "Añadir, modificar y eliminar productos del carrito, verificando el estado vía /cart.js.",
+      "acceptance": [
+        "Añadir un producto disponible desde la ficha incrementa el contador y /cart.js lo refleja",
+        "Cambiar la cantidad en /cart actualiza el total",
+        "Eliminar el producto deja el carrito vacío con mensaje",
+        "Un producto agotado no puede añadirse",
+        "Cada test parte de un carrito vacío (aislamiento por contexto de navegador)"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 6,
+      "name": "account_validation",
+      "tag": "AUTH",
+      "type": "ui",
+      "title": "Validación de login y registro",
+      "description": "Caminos negativos de /account/login y /account/register, sin crear cuentas.",
+      "acceptance": [
+        "Login con credenciales inválidas muestra un error y no autentica",
+        "Los formularios de login y registro muestran sus campos obligatorios",
+        "Enviar el registro sin datos obligatorios muestra validación"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 7,
+      "name": "checkout_entry",
+      "tag": "CHK",
+      "type": "ui",
+      "title": "Entrada al checkout",
+      "description": "Desde un carrito con producto se llega a la página de checkout de Shopify. Nunca se paga.",
+      "acceptance": [
+        "Con un producto en el carrito, el botón Check Out lleva a la URL de checkout",
+        "El checkout muestra el resumen con el producto añadido",
+        "Si Shopify bloquea el checkout automatizado, el escenario se marca blocked con evidencia"
+      ],
+      "status": "pending"
+    }
+  ]
+}

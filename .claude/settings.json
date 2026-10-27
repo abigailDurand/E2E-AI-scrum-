@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/init.mjs --hook",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/init.mjs --stop-hook",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/init.mjs*)",
+      "Bash(npx playwright test*)",
+      "Bash(npx playwright show-report*)",
+      "Bash(npx tsc --noEmit*)",
+      "Bash(curl -s https://sauce-demo.myshopify.com/*)",
+      "WebFetch(domain:sauce-demo.myshopify.com)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_navigate_back",
+      "mcp__playwright__browser_close"
+    ]
+  },
+  "enabledMcpjsonServers": ["playwright"]
+}
