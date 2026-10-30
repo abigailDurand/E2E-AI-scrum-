@@ -1,0 +1,25 @@
+{
+  "runner": "playwright",
+  "runner_version": "1.64.1",
+  "feature": "smoke_navigation",
+  "spec_commit": "ad80296",
+  "model": "",
+  "node": "26.13.0",
+  "date": "2026-10-30",
+  "kind": "injection",
+  "fault_id": "F-1",
+  "tests_total": 7,
+  "passed": 6,
+  "failed": 1,
+  "failed_tests": [
+    "NAV-03"
+  ],
+  "duration_s": 13.278,
+  "cost_eur": 0,
+  "human_interventions": 0,
+  "scenarios_total": 0,
+  "scenarios_traced": 0,
+  "files_changed": 0,
+  "lines_changed": 0,
+  "notes": "proxy F-1"
+}
