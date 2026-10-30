@@ -43,7 +43,7 @@
         "Catalog, Blog, About Us, Search y Cart son navegables desde el header",
         "Cada página destino muestra un encabezado o contenido identificable"
       ],
-      "status": "approved"
+      "status": "done"
     },
     {
       "id": 2,
