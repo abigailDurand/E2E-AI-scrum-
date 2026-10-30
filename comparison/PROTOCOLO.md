@@ -136,6 +136,12 @@ Qué rellena cada `kind`:
 `cost_eur` va en euros: si el proveedor cobra en USD, se convierte con el
 cambio del día y se anota en `notes`.
 
+Cada `run-NN.json` lo escribe `node scripts/measure.mjs <runner> <feature> <kind>`
+(arranca el proxy, ejecuta la suite y lee el informe del runner; ver su cabecera).
+Orden por feature: `control` → `stability` → `injection` → `maintenance`: en `e2e`,
+un paso que falla en una inyección pierde su grabación de la caché, así que la
+estabilidad se mide antes.
+
 El agregado lo hace `node scripts/compare.mjs`: lee `runs/`, aplica §4–§5 y
 escribe `RESULTADOS.md`. Si faltan ejecuciones, el resultado sale como
 **PROVISIONAL** y no declara ganador.
