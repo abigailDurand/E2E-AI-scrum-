@@ -11,7 +11,7 @@
       "type": "ui",
       "why": "Caso simple: línea base de coste y estabilidad",
       "faults": ["F-1", "F-2"],
-      "spec_commit": null
+      "spec_commit": "ad80296"
     },
     {
       "id": 2,

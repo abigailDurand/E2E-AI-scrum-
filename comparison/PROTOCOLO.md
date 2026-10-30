@@ -4,7 +4,7 @@
 > después de ver resultados invalida la comparación: si hay que cambiarlo,
 > se versiona aquí con fecha y motivo y se repiten todas las mediciones.
 
-- **Estado:** borrador (pendiente de aprobación humana)
+- **Estado:** aprobado (2026-10-30, por la usuaria)
 - **Fecha:** 2026-10-30
 - **Rama base (Playwright):** `main`
 - **Rama candidata (`e2e`):** `exp/e2e-agentic`
@@ -29,7 +29,9 @@ Lo único que cambia entre ramas es **el runner de los tests**. Se mantiene igua
 | Pipeline | spec → tests → triage → review (`docs/agent-flow.md`) |
 | Modelo de los subagentes | el mismo en ambas ramas (anotarlo en cada run) |
 | Sitio objetivo | `https://sauce-demo.myshopify.com`, workers ≤ 2 |
-| Máquina / Node | misma máquina, Node 24.x (anotar versión) |
+| Máquina / Node | misma máquina, Node 26.x (anotar versión exacta; `e2e@0.21.3` exige Node `^22.22.3` o `>=24.8.0`) |
+| Caché de repeticiones (`e2e`) | **activada** en las ejecuciones de medición (M1, M2, M6): `npx e2e run` sin `--no-cache` ni `--strict-cache`. La caché depende de la URL base, así que se parte de la que graba la ejecución de control por el proxy (fila siguiente) y no se borra entre ejecuciones. El `--no-cache` solo se usa dentro del pipeline (`docs/verification.md`). Anotar en `notes` cuántos pasos se repitieron desde caché y cuántos fueron en vivo (línea `Cache` del resumen). |
+| Ruta de red de las mediciones | **todas** las ejecuciones de medición (M1, M2, M6) de **ambos** runners pasan por el proxy local `http://127.0.0.1:8787` (`scripts/fault-proxy.mjs`): M2 con `none`, M1/M6 con su fallo. Antes de medir cada feature, una ejecución de control por el proxy con `none` que debe salir verde (no se registra). Detalle en `runs/<runner>/INYECCION.md`. |
 
 ## 3. Métricas
 
@@ -105,17 +107,44 @@ Un fichero por ejecución en `runs/<runner>/<feature>/run-NN.json`:
   "model": "",
   "node": "",
   "date": "",
-  "kind": "stability | injection | maintenance",
+  "kind": "generation | stability | injection | maintenance",
   "fault_id": null,
   "tests_total": 0,
   "passed": 0,
   "failed": 0,
+  "failed_tests": [],
   "duration_s": 0,
   "cost_eur": 0,
   "human_interventions": 0,
+  "scenarios_total": 0,
+  "scenarios_traced": 0,
+  "files_changed": 0,
+  "lines_changed": 0,
   "notes": ""
 }
 ```
+
+Qué rellena cada `kind`:
+
+| `kind` | Cuándo | Campos que cuentan | Métrica |
+|---|---|---|---|
+| `generation` | Una por feature: el pipeline completo hasta `APPROVED` | `cost_eur` (tokens del pipeline), `human_interventions`, `scenarios_total`, `scenarios_traced` | M3, M4, M5 |
+| `stability` | 10 por feature, sin cambios | `tests_total`, `failed_tests` (IDs `TAG-NN`), `duration_s`, `cost_eur` de la ejecución | M2, M3 |
+| `injection` | 3 por fallo, con `fault_id` | `failed` (> 0 = detectado en esa ejecución) | M1 |
+| `maintenance` | 1 por runner, `fault_id: "F-M"` | `files_changed`, `lines_changed` del arreglo | M6 |
+
+`cost_eur` va en euros: si el proveedor cobra en USD, se convierte con el
+cambio del día y se anota en `notes`.
+
+Cada `run-NN.json` lo escribe `node scripts/measure.mjs <runner> <feature> <kind>`
+(arranca el proxy, ejecuta la suite y lee el informe del runner; ver su cabecera).
+Orden por feature: `control` → `stability` → `injection` → `maintenance`: en `e2e`,
+un paso que falla en una inyección pierde su grabación de la caché, así que la
+estabilidad se mide antes.
+
+El agregado lo hace `node scripts/compare.mjs`: lee `runs/`, aplica §4–§5 y
+escribe `RESULTADOS.md`. Si faltan ejecuciones, el resultado sale como
+**PROVISIONAL** y no declara ganador.
 
 ## 8. Procedimiento
 
@@ -131,3 +160,8 @@ Un fichero por ejecución en `runs/<runner>/<feature>/run-NN.json`:
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-10-30 | Versión inicial | — |
+| 2026-10-30 | Node 24.x → 26.x (§2) | La máquina de medición tiene Node 26.13.0 (LTS instalado para cumplir el requisito de `e2e@0.21.3`). Cambio hecho en borrador, antes de cualquier medición. |
+| 2026-10-30 | Protocolo aprobado; `spec_commit` de `smoke_navigation` = `ad80296` | Aprobación humana. `products_api` y `cart` aún no tienen spec: su `spec_commit` se congela al aprobarse su spec, antes de medirlas. |
+| 2026-10-30 | §7: `kind: generation` y campos `failed_tests`, `scenarios_*`, `files_changed`, `lines_changed`; agregado con `scripts/compare.mjs` | El formato inicial no guardaba los datos que necesitan M2 (qué test falla en cada ejecución), M4/M5 (pipeline) y M6. Sin mediciones todavía; métricas, pesos y gates no cambian. |
+| 2026-10-30 | §2: caché de repeticiones de `e2e` activada en las mediciones | Decisión humana: medir `e2e` como se usaría a diario (más barato y estable). Contrapartida asumida: M1/M2 miden sobre todo la repetición grabada; cuando la pantalla cambia (inyección), el paso pasa al agente en vivo. Sin mediciones todavía. |
+| 2026-10-30 | §2: todas las mediciones de ambos runners pasan por el proxy local; la caché de `e2e` se calienta con un control por el proxy | En el ensayo, la caché de `e2e` grabada contra la tienda no se repitió por el proxy (`6 missed`): M1 habría ido en vivo y M2 con caché, midiendo `e2e` de dos formas. Pasar todo por el proxy lo iguala (Playwright no tiene caché y no cambia). Sin mediciones todavía. |
