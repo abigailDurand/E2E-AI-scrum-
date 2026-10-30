@@ -169,9 +169,11 @@ function normalize(a, b, higherIsBetter) {
 }
 
 const [pw, e2] = RUNNERS.map(metrics);
+const complete = !pw.missing.length && !e2.missing.length && !problems.length;
+// Sin datos completos no se puntúa: 0 contra 0 saldría como empate perfecto (100).
 const scores = { playwright: {}, e2e: {} };
 for (const [key, higher] of [["m1", true], ["m2", false], ["m3", false], ["m4", false], ["m6", false]]) {
-  const [a, b] = normalize(pw[key], e2[key], higher);
+  const [a, b] = complete ? normalize(pw[key], e2[key], higher) : [null, null];
   scores.playwright[key] = a;
   scores.e2e[key] = b;
 }
@@ -180,7 +182,6 @@ const total = (s) => (Object.values(s).some((v) => v == null)
   : sum(Object.entries(WEIGHTS).map(([k, w]) => (s[k] * w) / 100)));
 const totals = { playwright: total(scores.playwright), e2e: total(scores.e2e) };
 
-const complete = !pw.missing.length && !e2.missing.length && !problems.length;
 let verdict;
 if (!complete) {
   verdict = "**PROVISIONAL** — faltan ejecuciones o hay datos inválidos; no se declara ganador.";
@@ -200,7 +201,7 @@ const lines = [
   "# Resultados: Playwright vs `e2e`",
   "",
   `> Generado por \`node scripts/compare.mjs\` el ${new Date().toISOString().slice(0, 10)}`,
-  "> a partir de `comparison/runs/`. No editar a mano: corregir los runs y regenerar.",
+  `> a partir de \`${RUNS_DIR}\`. No editar a mano: corregir los runs y regenerar.`,
   "",
   "## Veredicto",
   "",
@@ -216,6 +217,7 @@ const lines = [
   "",
   "## Puntuación ponderada (§5)",
   "",
+  ...(complete ? [] : ["_Los puntos solo se calculan con todas las ejecuciones; abajo, los valores parciales._", ""]),
   "| Métrica | Peso | playwright (valor → puntos) | e2e (valor → puntos) |",
   "|---|---|---|---|",
   `| M1 eficacia (% detectados) | ${WEIGHTS.m1} % | ${fmt(pw.m1)} → ${fmt(scores.playwright.m1)} | ${fmt(e2.m1)} → ${fmt(scores.e2e.m1)} |`,
