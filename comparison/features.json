@@ -19,7 +19,7 @@
       "type": "api",
       "why": "Contrato de datos: mide si el runner agéntico sirve para API",
       "faults": ["F-3", "F-4"],
-      "spec_commit": null
+      "spec_commit": "2439e92"
     },
     {
       "id": 5,
