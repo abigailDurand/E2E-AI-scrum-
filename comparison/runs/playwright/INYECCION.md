@@ -15,8 +15,9 @@ no pasarían por una intercepción del navegador (`page.route` / `browser.route`
 
 - **Script:** `scripts/fault-proxy.mjs` (probado el 2026-10-30: control `FAULT=none`
   con los 7 tests de `smoke_navigation` de Playwright en verde; cada fallo comprobado con curl).
-- **Arranque:** `FAULT=<ID> node scripts/fault-proxy.mjs` → escucha en
-  `http://127.0.0.1:8787`. Sin `FAULT` (o `FAULT=none`) solo reenvía.
+- **Arranque:** `node scripts/fault-proxy.mjs <ID>` (igual en cualquier shell; también
+  vale `FAULT=<ID>`) → escucha en `http://127.0.0.1:8787`. Con `none` o sin argumento
+  solo reenvía. El mensaje de arranque debe decir `[fault-proxy <ID>]`.
 - **Siempre, con o sin fallo:** reenvía a la tienda con su `Host`, quita la
   cabecera `content-security-policy` (su `upgrade-insecure-requests` rompería
   la página servida por `http://`), y reescribe `https://sauce-demo.myshopify.com`
@@ -28,11 +29,24 @@ no pasarían por una intercepción del navegador (`page.route` / `browser.route`
 
 ## Cómo se ejecuta una inyección
 
-1. Terminal 1: `FAULT=<ID> node scripts/fault-proxy.mjs`.
+1. Terminal 1: `node scripts/fault-proxy.mjs <ID>` y comprobar `[fault-proxy <ID>]`.
 2. Terminal 2: la suite de la feature apuntando al proxy (ver la columna
    "Cómo se activa" de abajo), 3 veces (§3, M1).
 3. Un `run-NN.json` por ejecución, `kind: "injection"`, `fault_id: "<ID>"`.
    Detectado = la ejecución tiene al menos un test en rojo (`failed > 0`).
+
+## Todas las mediciones pasan por el proxy
+
+La caché de repeticiones de `e2e` depende de la URL base: lo grabado contra la
+tienda no se repite por el proxy (en el ensayo: `6 missed`, todo en vivo). Para
+medir `e2e` siempre igual (§2), **todas** las ejecuciones de medición de ambos
+runners van por el proxy:
+
+- **M2 (estabilidad):** `node scripts/fault-proxy.mjs none` + la suite contra el proxy.
+- **M1 / M6:** el proxy con su fallo + la suite contra el proxy.
+- Antes de la primera medición de cada feature, una ejecución de control por el
+  proxy con `none` (debe salir verde; en `e2e` además graba la caché para esa URL).
+  No se registra.
 
 ## Catálogo
 

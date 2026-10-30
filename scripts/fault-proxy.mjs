@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // fault-proxy.mjs — Proxy local que inyecta los fallos del catálogo (PROTOCOLO.md §6).
 //
-// Uso:
-//   FAULT=F-1 node scripts/fault-proxy.mjs     inyecta F-1 en http://127.0.0.1:8787
-//   node scripts/fault-proxy.mjs               sin FAULT (o FAULT=none): solo reenvía (control)
+// Uso (igual en PowerShell, cmd y bash):
+//   node scripts/fault-proxy.mjs F-1           inyecta F-1 en http://127.0.0.1:8787
+//   node scripts/fault-proxy.mjs none          solo reenvía (control; también sin argumento)
+//   FAULT=F-1 node scripts/fault-proxy.mjs     equivalente con variable de entorno
 //
 // Los tests se apuntan al proxy con BASE_URL (Playwright) o APP_URL (e2e).
 // El mecanismo de cada fallo está fijado en comparison/runs/<runner>/INYECCION.md:
@@ -14,7 +15,8 @@ import { createServer } from "node:http";
 const UPSTREAM = "https://sauce-demo.myshopify.com";
 const PORT = Number(process.env.PORT ?? 8787);
 const SELF = `http://127.0.0.1:${PORT}`;
-const FAULT = (process.env.FAULT ?? "none").toUpperCase();
+// El argumento manda sobre FAULT: la sintaxis de variables cambia entre shells.
+const FAULT = (process.argv[2] ?? process.env.FAULT ?? "none").trim().toUpperCase();
 const FAULTS = ["NONE", "F-1", "F-2", "F-3", "F-4", "F-5", "F-6", "F-7", "F-M"];
 // Variantes agotadas observadas el 2026-10-30 (INYECCION.md, F-7).
 const SOLD_OUT = { "brown-shades": 1063105029, "white-sandals": 611940609 };
