@@ -29,7 +29,7 @@ Lo único que cambia entre ramas es **el runner de los tests**. Se mantiene igua
 | Pipeline | spec → tests → triage → review (`docs/agent-flow.md`) |
 | Modelo de los subagentes | el mismo en ambas ramas (anotarlo en cada run) |
 | Sitio objetivo | `https://sauce-demo.myshopify.com`, workers ≤ 2 |
-| Máquina / Node | misma máquina, Node 24.x (anotar versión) |
+| Máquina / Node | misma máquina, Node 26.x (anotar versión exacta; `e2e@0.21.3` exige Node `^22.22.3` o `>=24.8.0`) |
 
 ## 3. Métricas
 
@@ -131,3 +131,4 @@ Un fichero por ejecución en `runs/<runner>/<feature>/run-NN.json`:
 | Fecha | Cambio | Motivo |
 |---|---|---|
 | 2026-10-30 | Versión inicial | — |
+| 2026-10-30 | Node 24.x → 26.x (§2) | La máquina de medición tiene Node 26.13.0 (LTS instalado para cumplir el requisito de `e2e@0.21.3`). Cambio hecho en borrador, antes de cualquier medición. |
