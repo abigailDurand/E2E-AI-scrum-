@@ -26,3 +26,11 @@
   Green 7/7, `repeat-each=3` estable → `progress/impl_smoke_navigation.md`. Loops de corrección: 0/2.
 - **Review:** APPROVED → `progress/review_smoke_navigation.md`.
 - **Resultado:** feature 1 `approved`; issue #1 `status:approved`. Pendiente: PR con `Closes #1` y merge → `done`.
+
+## 2026-10-30 — Feature 2 `products_api` (issue #2), runner Playwright
+
+- spec-writer → `specs/products_api.md` (5 escenarios PAPI-01…05); aprobada por el PO (abigailDurand).
+- test-implementer → green (5/5; repeat-each=3 15/15). PAPI-04 en secuencia: con concurrencia 2
+  Shopify respondió 429 (rate limit); no se reintenta el 429.
+- test-reviewer → APPROVED (`progress/review_products_api.md`). 0 loops de corrección.
+

@@ -53,7 +53,7 @@
       "title": "Contrato de la API de productos",
       "story": "Como PO quiero validar el contrato de la API de productos para que un cambio de datos no rompa el catálogo sin que nadie lo note.",
       "issue": 2,
-      "spec_approved_by": null,
+      "spec_approved_by": "abigailDurand",
       "description": "Valida /products.json y /products/<handle>.js como contrato de datos.",
       "acceptance": [
         "/products.json responde 200 con un array de productos con id, title, handle y variants",
@@ -61,7 +61,7 @@
         "/products/<handle>.js devuelve el mismo producto que el listado",
         "Un handle inexistente responde 404"
       ],
-      "status": "pending"
+      "status": "approved"
     },
     {
       "id": 3,
