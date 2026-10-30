@@ -1,0 +1,18 @@
+{
+  "runner": "playwright | e2e",
+  "runner_version": "",
+  "feature": "",
+  "spec_commit": "",
+  "model": "",
+  "node": "",
+  "date": "",
+  "kind": "stability | injection | maintenance",
+  "fault_id": null,
+  "tests_total": 0,
+  "passed": 0,
+  "failed": 0,
+  "duration_s": 0,
+  "cost_eur": 0,
+  "human_interventions": 0,
+  "notes": ""
+}
