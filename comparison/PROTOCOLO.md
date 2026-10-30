@@ -39,7 +39,7 @@ Lo único que cambia entre ramas es **el runner de los tests**. Se mantiene igua
 |---|---|---|---|
 | M1 | Eficacia | % de fallos inyectados detectados | Catálogo de fallos de §6; cada fallo se ejecuta 3 veces. Detectado = el test falla las 3. |
 | M2 | Estabilidad | % flaky | 10 ejecuciones consecutivas sin cambios; flaky = test con resultado distinto entre ejecuciones. |
-| M3 | Coste | € totales a 30 días de CI | Coste de generación (tokens del pipeline) + coste por ejecución × 30. Anotar también tiempo de ejecución medio. |
+| M3 | Coste | € totales a 30 días de CI | Coste de generación (tokens del **modelo del runner** durante el pipeline; los de Claude no cuentan, ver §9) + coste por ejecución × 30. Anotar también tiempo de ejecución medio. |
 | M4 | Esfuerzo humano | nº de intervenciones | Rechazos de review + loops de triage + intervenciones humanas en checkpoints, por feature. |
 | M5 | Trazabilidad | % escenarios trazables | Escenarios de la spec con un test identificable que los cubre. |
 | M6 | Mantenimiento | ficheros/líneas a tocar | Se simula un cambio de UI (§6, F-M) y se mide el arreglo necesario. |
@@ -128,7 +128,7 @@ Qué rellena cada `kind`:
 
 | `kind` | Cuándo | Campos que cuentan | Métrica |
 |---|---|---|---|
-| `generation` | Una por feature: el pipeline completo hasta `APPROVED` | `cost_eur` (tokens del pipeline), `human_interventions`, `scenarios_total`, `scenarios_traced` | M3, M4, M5 |
+| `generation` | Una por feature: el pipeline completo hasta `APPROVED` | `cost_eur` (tokens del modelo del runner en el pipeline; 0 en Playwright), `human_interventions`, `scenarios_total`, `scenarios_traced` | M3, M4, M5 |
 | `stability` | 10 por feature, sin cambios | `tests_total`, `failed_tests` (IDs `TAG-NN`), `duration_s`, `cost_eur` de la ejecución | M2, M3 |
 | `injection` | 3 por fallo, con `fault_id` | `failed` (> 0 = detectado en esa ejecución) | M1 |
 | `maintenance` | 1 por runner, `fault_id: "F-M"` | `files_changed`, `lines_changed` del arreglo | M6 |
@@ -166,3 +166,4 @@ escribe `RESULTADOS.md`. Si faltan ejecuciones, el resultado sale como
 | 2026-10-30 | §2: caché de repeticiones de `e2e` activada en las mediciones | Decisión humana: medir `e2e` como se usaría a diario (más barato y estable). Contrapartida asumida: M1/M2 miden sobre todo la repetición grabada; cuando la pantalla cambia (inyección), el paso pasa al agente en vivo. Sin mediciones todavía. |
 | 2026-10-30 | §2: todas las mediciones de ambos runners pasan por el proxy local; la caché de `e2e` se calienta con un control por el proxy | En el ensayo, la caché de `e2e` grabada contra la tienda no se repitió por el proxy (`6 missed`): M1 habría ido en vivo y M2 con caché, midiendo `e2e` de dos formas. Pasar todo por el proxy lo iguala (Playwright no tiene caché y no cambia). Sin mediciones todavía. |
 | 2026-10-30 | Alcance reducido a `smoke_navigation` (features.json); F-3…F-7 fuera de alcance; F-M redefinido: enlace "Catalog" → "Shop" | Decisión humana: comparar una sola feature, la ya ensayada y con `agent.act` (la IA trabaja en cada test). El F-M anterior (botón "Add to Cart") no lo usa ningún test de esta feature (0/0 en ambos runners) y M6 no mediría nada. M1 queda con F-1 y F-2: G1 (≥ 90 %) exige detectar los dos. Sin mediciones todavía. |
+| 2026-10-30 | §3/§7: M3 cuenta solo el coste del modelo del runner (DeepSeek en `e2e`, 0 en Playwright); los tokens de Claude de los subagentes quedan fuera en ambos runners | Decisión humana. El pipeline de Playwright (2026-10-27) no registró los tokens de Claude, así que no se pueden comparar de forma justa. Ambos runners usan el mismo pipeline de Claude, por lo que excluirlo no favorece a ninguno. Ya existen las mediciones de Playwright (coste 0); `e2e` sin medir. |
