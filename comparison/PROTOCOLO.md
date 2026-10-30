@@ -105,17 +105,38 @@ Un fichero por ejecución en `runs/<runner>/<feature>/run-NN.json`:
   "model": "",
   "node": "",
   "date": "",
-  "kind": "stability | injection | maintenance",
+  "kind": "generation | stability | injection | maintenance",
   "fault_id": null,
   "tests_total": 0,
   "passed": 0,
   "failed": 0,
+  "failed_tests": [],
   "duration_s": 0,
   "cost_eur": 0,
   "human_interventions": 0,
+  "scenarios_total": 0,
+  "scenarios_traced": 0,
+  "files_changed": 0,
+  "lines_changed": 0,
   "notes": ""
 }
 ```
+
+Qué rellena cada `kind`:
+
+| `kind` | Cuándo | Campos que cuentan | Métrica |
+|---|---|---|---|
+| `generation` | Una por feature: el pipeline completo hasta `APPROVED` | `cost_eur` (tokens del pipeline), `human_interventions`, `scenarios_total`, `scenarios_traced` | M3, M4, M5 |
+| `stability` | 10 por feature, sin cambios | `tests_total`, `failed_tests` (IDs `TAG-NN`), `duration_s`, `cost_eur` de la ejecución | M2, M3 |
+| `injection` | 3 por fallo, con `fault_id` | `failed` (> 0 = detectado en esa ejecución) | M1 |
+| `maintenance` | 1 por runner, `fault_id: "F-M"` | `files_changed`, `lines_changed` del arreglo | M6 |
+
+`cost_eur` va en euros: si el proveedor cobra en USD, se convierte con el
+cambio del día y se anota en `notes`.
+
+El agregado lo hace `node scripts/compare.mjs`: lee `runs/`, aplica §4–§5 y
+escribe `RESULTADOS.md`. Si faltan ejecuciones, el resultado sale como
+**PROVISIONAL** y no declara ganador.
 
 ## 8. Procedimiento
 
@@ -133,3 +154,4 @@ Un fichero por ejecución en `runs/<runner>/<feature>/run-NN.json`:
 | 2026-10-30 | Versión inicial | — |
 | 2026-10-30 | Node 24.x → 26.x (§2) | La máquina de medición tiene Node 26.13.0 (LTS instalado para cumplir el requisito de `e2e@0.21.3`). Cambio hecho en borrador, antes de cualquier medición. |
 | 2026-10-30 | Protocolo aprobado; `spec_commit` de `smoke_navigation` = `ad80296` | Aprobación humana. `products_api` y `cart` aún no tienen spec: su `spec_commit` se congela al aprobarse su spec, antes de medirlas. |
+| 2026-10-30 | §7: `kind: generation` y campos `failed_tests`, `scenarios_*`, `files_changed`, `lines_changed`; agregado con `scripts/compare.mjs` | El formato inicial no guardaba los datos que necesitan M2 (qué test falla en cada ejecución), M4/M5 (pipeline) y M6. Sin mediciones todavía; métricas, pesos y gates no cambian. |
