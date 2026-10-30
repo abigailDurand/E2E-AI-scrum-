@@ -1,0 +1,33 @@
+{
+  "description": "Features usadas en la comparación Playwright vs e2e. spec_commit se congela al aprobar el protocolo; ambas ramas deben usar ese mismo commit.",
+  "runners": {
+    "baseline": { "name": "playwright", "branch": "main", "version": "@playwright/test ^1.48.0" },
+    "candidate": { "name": "e2e", "branch": "exp/e2e-agentic", "version": "0.21.3" }
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "smoke_navigation",
+      "type": "ui",
+      "why": "Caso simple: línea base de coste y estabilidad",
+      "faults": ["F-1", "F-2"],
+      "spec_commit": null
+    },
+    {
+      "id": 2,
+      "name": "products_api",
+      "type": "api",
+      "why": "Contrato de datos: mide si el runner agéntico sirve para API",
+      "faults": ["F-3", "F-4"],
+      "spec_commit": null
+    },
+    {
+      "id": 5,
+      "name": "cart",
+      "type": "ui+api",
+      "why": "Flujo largo con estado: donde más difieren los runners",
+      "faults": ["F-5", "F-6", "F-7"],
+      "spec_commit": null
+    }
+  ]
+}

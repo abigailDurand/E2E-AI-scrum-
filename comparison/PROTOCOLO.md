@@ -1,0 +1,133 @@
+# Protocolo de comparación: Playwright vs `e2e` (agéntico)
+
+> Este documento se fija **antes** de medir. Cambiar pesos, umbrales o features
+> después de ver resultados invalida la comparación: si hay que cambiarlo,
+> se versiona aquí con fecha y motivo y se repiten todas las mediciones.
+
+- **Estado:** borrador (pendiente de aprobación humana)
+- **Fecha:** 2026-10-30
+- **Rama base (Playwright):** `main`
+- **Rama candidata (`e2e`):** `exp/e2e-agentic`
+- **Versión candidata:** `e2e@0.21.3` (fijada; nunca `@latest`)
+
+## 1. Pregunta e hipótesis
+
+**Pregunta:** ¿reemplazar Playwright por `e2e` como runner del arnés mejora la
+suite sin perder capacidad de detectar regresiones?
+
+- **H0:** `e2e` no es mejor que Playwright en la puntuación ponderada (§5).
+- **H1:** `e2e` supera los gates (§4) y obtiene mayor puntuación ponderada.
+
+## 2. Variables controladas
+
+Lo único que cambia entre ramas es **el runner de los tests**. Se mantiene igual:
+
+| Variable | Valor |
+|---|---|
+| Features | las de `features.json` |
+| Specs | el mismo commit de `specs/<name>.md` en ambas ramas |
+| Pipeline | spec → tests → triage → review (`docs/agent-flow.md`) |
+| Modelo de los subagentes | el mismo en ambas ramas (anotarlo en cada run) |
+| Sitio objetivo | `https://sauce-demo.myshopify.com`, workers ≤ 2 |
+| Máquina / Node | misma máquina, Node 24.x (anotar versión) |
+
+## 3. Métricas
+
+| # | Dimensión | Métrica | Cómo se mide |
+|---|---|---|---|
+| M1 | Eficacia | % de fallos inyectados detectados | Catálogo de fallos de §6; cada fallo se ejecuta 3 veces. Detectado = el test falla las 3. |
+| M2 | Estabilidad | % flaky | 10 ejecuciones consecutivas sin cambios; flaky = test con resultado distinto entre ejecuciones. |
+| M3 | Coste | € totales a 30 días de CI | Coste de generación (tokens del pipeline) + coste por ejecución × 30. Anotar también tiempo de ejecución medio. |
+| M4 | Esfuerzo humano | nº de intervenciones | Rechazos de review + loops de triage + intervenciones humanas en checkpoints, por feature. |
+| M5 | Trazabilidad | % escenarios trazables | Escenarios de la spec con un test identificable que los cubre. |
+| M6 | Mantenimiento | ficheros/líneas a tocar | Se simula un cambio de UI (§6, F-M) y se mide el arreglo necesario. |
+
+Tiempo de ejecución se registra pero no puntúa por separado (forma parte de M3).
+
+## 4. Gates (eliminatorios)
+
+Un runner que no pase **todos** los gates queda descartado, aunque puntúe más:
+
+- **G1:** M1 ≥ 90 % de fallos inyectados detectados.
+- **G2:** M2 ≤ 2 % flaky.
+- **G3:** M5 = 100 % (todo escenario de la spec trazable).
+
+> Motivo de G1: un runner agéntico puede "adaptarse" y dar verde donde debería
+> fallar (falso verde). Es el riesgo principal del cambio.
+
+## 5. Puntuación ponderada
+
+Cada métrica se normaliza a 0–100 (100 = mejor de los dos; el otro proporcional).
+
+| Métrica | Peso |
+|---|---|
+| M1 Eficacia | 35 % |
+| M2 Estabilidad | 25 % |
+| M3 Coste | 15 % |
+| M4 Esfuerzo humano | 15 % |
+| M6 Mantenimiento | 10 % |
+
+M5 solo actúa como gate.
+
+**Regla de decisión:**
+
+1. Si solo uno pasa los gates → gana ese.
+2. Si ambos pasan → gana el de mayor puntuación, **siempre que la diferencia sea ≥ 5 puntos**.
+3. Diferencia < 5 puntos → empate técnico: se queda Playwright (coste de cambio).
+
+## 6. Catálogo de fallos inyectados
+
+Se inyectan sin tocar el sitio (es de terceros): interceptando red o
+alterando la expectativa. El mecanismo concreto por runner se documenta en
+`runs/<runner>/INYECCION.md`.
+
+| ID | Feature | Fallo | Debe detectarse como |
+|---|---|---|---|
+| F-1 | smoke_navigation | Un enlace del header responde 404 | Fallo de navegación |
+| F-2 | smoke_navigation | Se elimina el encabezado de la página destino | Fallo de contenido |
+| F-3 | products_api | `/products.json` devuelve una variante sin `price` | Fallo de contrato |
+| F-4 | products_api | `/products/<handle>.js` responde 500 | Fallo de status |
+| F-5 | cart | `/cart/add.js` responde 200 pero `/cart.js` sigue vacío | Fallo de estado |
+| F-6 | cart | El total no se actualiza al cambiar la cantidad | Fallo de cálculo |
+| F-7 | cart | Producto agotado aparece como añadible | Fallo de regla de negocio |
+| F-M | cualquiera | Cambio de texto/atributo de un botón usado por los tests | Mide M6 (no M1) |
+
+## 7. Formato de cada ejecución
+
+Un fichero por ejecución en `runs/<runner>/<feature>/run-NN.json`:
+
+```json
+{
+  "runner": "playwright | e2e",
+  "runner_version": "",
+  "feature": "",
+  "spec_commit": "",
+  "model": "",
+  "node": "",
+  "date": "",
+  "kind": "stability | injection | maintenance",
+  "fault_id": null,
+  "tests_total": 0,
+  "passed": 0,
+  "failed": 0,
+  "duration_s": 0,
+  "cost_eur": 0,
+  "human_interventions": 0,
+  "notes": ""
+}
+```
+
+## 8. Procedimiento
+
+1. Aprobar este protocolo (humano) y congelar `spec_commit` en `features.json`.
+2. **Baseline** en `main`: pipeline completo con Playwright por feature; registrar M4/M5.
+3. Ejecutar M2 (10 runs), M1 (catálogo §6) y M6 (F-M) con Playwright.
+4. Crear `exp/e2e-agentic` desde `main`, adaptar el arnés y repetir 2–3 con `e2e`.
+5. Agregar `runs/` en `RESULTADOS.md` y aplicar §4–§5.
+6. Enlazar `RESULTADOS.md` en el PR draft; el humano decide merge o cierre.
+
+## 9. Registro de cambios del protocolo
+
+| Fecha | Cambio | Motivo |
+|---|---|---|
+| 2026-10-30 | Versión inicial | — |
