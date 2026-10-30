@@ -35,15 +35,15 @@
       "type": "ui",
       "title": "Smoke de navegación",
       "story": "Como PO quiero que la navegación principal esté cubierta por E2E para saber al instante si una release rompe el menú.",
-      "issue": null,
-      "spec_approved_by": null,
+      "issue": 1,
+      "spec_approved_by": "abigailDurand",
       "description": "La home carga y los enlaces principales del header llevan a su página.",
       "acceptance": [
         "La home responde y muestra el título/logo de la tienda",
         "Catalog, Blog, About Us, Search y Cart son navegables desde el header",
         "Cada página destino muestra un encabezado o contenido identificable"
       ],
-      "status": "pending"
+      "status": "approved"
     },
     {
       "id": 2,
