@@ -61,7 +61,7 @@
         "/products/<handle>.js devuelve el mismo producto que el listado",
         "Un handle inexistente responde 404"
       ],
-      "status": "approved"
+      "status": "done"
     },
     {
       "id": 3,

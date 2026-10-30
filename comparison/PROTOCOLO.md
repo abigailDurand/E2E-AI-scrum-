@@ -92,7 +92,7 @@ alterando la expectativa. El mecanismo concreto por runner se documenta en
 | F-5 | cart | `/cart/add.js` responde 200 pero `/cart.js` sigue vacío | Fallo de estado |
 | F-6 | cart | El total no se actualiza al cambiar la cantidad | Fallo de cálculo |
 | F-7 | cart | Producto agotado aparece como añadible | Fallo de regla de negocio |
-| F-M | cualquiera | Cambio de texto/atributo de un botón usado por los tests | Mide M6 (no M1) |
+| F-M | smoke_navigation | El enlace "Catalog" del menú principal pasa a llamarse "Shop" (mismo destino) | Mide M6 (no M1) |
 
 ## 7. Formato de cada ejecución
 
@@ -165,3 +165,4 @@ escribe `RESULTADOS.md`. Si faltan ejecuciones, el resultado sale como
 | 2026-10-30 | §7: `kind: generation` y campos `failed_tests`, `scenarios_*`, `files_changed`, `lines_changed`; agregado con `scripts/compare.mjs` | El formato inicial no guardaba los datos que necesitan M2 (qué test falla en cada ejecución), M4/M5 (pipeline) y M6. Sin mediciones todavía; métricas, pesos y gates no cambian. |
 | 2026-10-30 | §2: caché de repeticiones de `e2e` activada en las mediciones | Decisión humana: medir `e2e` como se usaría a diario (más barato y estable). Contrapartida asumida: M1/M2 miden sobre todo la repetición grabada; cuando la pantalla cambia (inyección), el paso pasa al agente en vivo. Sin mediciones todavía. |
 | 2026-10-30 | §2: todas las mediciones de ambos runners pasan por el proxy local; la caché de `e2e` se calienta con un control por el proxy | En el ensayo, la caché de `e2e` grabada contra la tienda no se repitió por el proxy (`6 missed`): M1 habría ido en vivo y M2 con caché, midiendo `e2e` de dos formas. Pasar todo por el proxy lo iguala (Playwright no tiene caché y no cambia). Sin mediciones todavía. |
+| 2026-10-30 | Alcance reducido a `smoke_navigation` (features.json); F-3…F-7 fuera de alcance; F-M redefinido: enlace "Catalog" → "Shop" | Decisión humana: comparar una sola feature, la ya ensayada y con `agent.act` (la IA trabaja en cada test). El F-M anterior (botón "Add to Cart") no lo usa ningún test de esta feature (0/0 en ambos runners) y M6 no mediría nada. M1 queda con F-1 y F-2: G1 (≥ 90 %) exige detectar los dos. Sin mediciones todavía. |

@@ -1,0 +1,23 @@
+{
+  "runner": "playwright",
+  "runner_version": "1.64.1",
+  "feature": "smoke_navigation",
+  "spec_commit": "ad80296",
+  "model": "",
+  "node": "26.13.0",
+  "date": "2026-10-30",
+  "kind": "generation",
+  "fault_id": null,
+  "tests_total": 0,
+  "passed": 0,
+  "failed": 0,
+  "failed_tests": [],
+  "duration_s": 0,
+  "cost_eur": 0,
+  "human_interventions": 0,
+  "scenarios_total": 7,
+  "scenarios_traced": 7,
+  "files_changed": 0,
+  "lines_changed": 0,
+  "notes": "trazados 7/7 en 2 archivo(s) .spec.ts. Pipeline 2026-10-27 (history.md): 0 loops, review APPROVED a la primera. La aprobación de la spec por el PO no se cuenta: la spec es común a ambos runners. Coste del pipeline (tokens de Claude) no registrado en su día."
+}

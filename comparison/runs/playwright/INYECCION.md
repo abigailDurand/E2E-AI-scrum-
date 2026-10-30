@@ -54,19 +54,19 @@ runners van por el proxy:
 |---|---|---|---|
 | F-1 | smoke_navigation | `GET /blogs/news` (destino del enlace "Blog") → **404** con HTML mínimo `<title>404 Not Found</title><h1>404 Page Not Found</h1>`, sin reenviar a la tienda. Debe caer NAV-03. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @NAV-` |
 | F-2 | smoke_navigation | `GET /pages/about-us` → se reenvía y se **elimina del HTML** el elemento exacto `<h1>About Us</h1>` (el resto igual: URL, `<title>` y menú intactos). Debe caer NAV-04. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @NAV-` |
-| F-3 | products_api | `GET /products.json` → se reenvía y se **borra la clave `price`** de la primera variante del primer producto. Status 200 y resto del JSON intactos. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @PAPI-` |
-| F-4 | products_api | `GET /products/<handle>.js` (cualquier handle) → **500** con cuerpo `{"error":"injected"}`, sin reenviar. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @PAPI-` |
-| F-5 | cart | `POST /cart/add.js` → **200** con JSON de línea plausible (`id` y `quantity` de la petición) **sin reenviar**; `POST /cart/add` (formulario) → **302** a `/cart` sin reenviar. El carrito real (`/cart.js`) sigue vacío. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
-| F-6 | cart | `POST /cart/change(.js)` y `POST /cart/update(.js)` → **no se reenvían**: las `.js` responden 200 con el `/cart.js` actual de la tienda (mismas cookies); las de formulario, 302 a `/cart`. La cantidad pedida no se aplica y el total no cambia. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
-| F-7 | cart | Variantes agotadas (`brown-shades` 1063105029 y `white-sandals` 611940609, observadas el 2026-10-30): `"available":false` → `true` en `/products.json`, `/products/<handle>.js` y en el JSON del producto incrustado en la ficha HTML (su script habilita el botón "Add to Cart" en lugar de "Sold Out"). `/cart/add.js` se reenvía tal cual. Ojo: la tienda real **acepta** añadir una variante agotada por API (comprobado el 2026-10-30, 200 y entra en `/cart.js`); el fallo inyectado es la parte de UI y de `available`. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
-| F-M | cart (ficha de producto) | En el HTML de `/products/*`: el botón `<input id="add" value="Add To Cart">` pasa a `value="Add to Bag"` y el texto que pone su script (`val('Add to Cart')`) también. Mide M6, no M1. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
+| F-3 | products_api | _Fuera de alcance (PROTOCOLO §9): no se mide._ `GET /products.json` → se reenvía y se **borra la clave `price`** de la primera variante del primer producto. Status 200 y resto del JSON intactos. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @PAPI-` |
+| F-4 | products_api | _Fuera de alcance (PROTOCOLO §9): no se mide._ `GET /products/<handle>.js` (cualquier handle) → **500** con cuerpo `{"error":"injected"}`, sin reenviar. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @PAPI-` |
+| F-5 | cart | _Fuera de alcance (PROTOCOLO §9): no se mide._ `POST /cart/add.js` → **200** con JSON de línea plausible (`id` y `quantity` de la petición) **sin reenviar**; `POST /cart/add` (formulario) → **302** a `/cart` sin reenviar. El carrito real (`/cart.js`) sigue vacío. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
+| F-6 | cart | _Fuera de alcance (PROTOCOLO §9): no se mide._ `POST /cart/change(.js)` y `POST /cart/update(.js)` → **no se reenvían**: las `.js` responden 200 con el `/cart.js` actual de la tienda (mismas cookies); las de formulario, 302 a `/cart`. La cantidad pedida no se aplica y el total no cambia. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
+| F-7 | cart | _Fuera de alcance (PROTOCOLO §9): no se mide._ Variantes agotadas (`brown-shades` 1063105029 y `white-sandals` 611940609, observadas el 2026-10-30): `"available":false` → `true` en `/products.json`, `/products/<handle>.js` y en el JSON del producto incrustado en la ficha HTML (su script habilita el botón "Add to Cart" en lugar de "Sold Out"). `/cart/add.js` se reenvía tal cual. Ojo: la tienda real **acepta** añadir una variante agotada por API (comprobado el 2026-10-30, 200 y entra en `/cart.js`); el fallo inyectado es la parte de UI y de `available`. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
+| F-M | smoke_navigation | En todas las páginas HTML: `<a href="/collections/all">Catalog</a>` (menú principal) pasa a `<a href="/collections/all">Shop</a>`; mismo destino. Lo usa NAV-02. Mide M6, no M1. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @NAV-` |
 
 ## F-M: cómo se mide M6
 
-1. Con `FAULT=F-M`, ejecutar la suite de `cart` contra el proxy.
+1. `node scripts/measure.mjs <runner> smoke_navigation maintenance` (proxy con F-M).
 2. Si falla, arreglar los tests (sin tocar la spec) hasta que pase en verde
    contra el proxy.
-3. `git diff --stat -- tests/` da `files_changed` y `lines_changed`
-   (insertadas + borradas) → `run-NN.json` con `kind: "maintenance"`.
+3. `node scripts/measure.mjs <runner> smoke_navigation maintenance --record`: cuenta
+   `files_changed` y `lines_changed` con `git diff --numstat -- tests/`.
    Si pasa sin tocar nada: `0` y `0`.
 4. Revertir el arreglo (`git checkout -- tests/`): el cambio de UI es simulado.

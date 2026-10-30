@@ -1,0 +1,23 @@
+{
+  "runner": "playwright",
+  "runner_version": "1.64.1",
+  "feature": "smoke_navigation",
+  "spec_commit": "ad80296",
+  "model": "",
+  "node": "26.13.0",
+  "date": "2026-10-30",
+  "kind": "stability",
+  "fault_id": null,
+  "tests_total": 7,
+  "passed": 7,
+  "failed": 0,
+  "failed_tests": [],
+  "duration_s": 11.901,
+  "cost_eur": 0,
+  "human_interventions": 0,
+  "scenarios_total": 0,
+  "scenarios_traced": 0,
+  "files_changed": 0,
+  "lines_changed": 0,
+  "notes": "proxy none"
+}

@@ -154,11 +154,9 @@ function mutate(path, contentType, text) {
       return JSON.stringify(json);
     }
   }
-  if (FAULT === "F-M" && /^\/products\/[^/.]+$/.test(path) && contentType.includes("html")) {
-    log(`botón renombrado en ${path}`);
-    return text
-      .replace('value="Add To Cart"', 'value="Add to Bag"')
-      .replaceAll(".val('Add to Cart')", ".val('Add to Bag')");
+  if (FAULT === "F-M" && contentType.includes("html") && text.includes('<a href="/collections/all">Catalog</a>')) {
+    log(`enlace "Catalog" renombrado a "Shop" en ${path}`);
+    return text.replace('<a href="/collections/all">Catalog</a>', '<a href="/collections/all">Shop</a>');
   }
   return text;
 }
