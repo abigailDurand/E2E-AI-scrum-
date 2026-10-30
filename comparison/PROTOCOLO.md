@@ -4,7 +4,7 @@
 > después de ver resultados invalida la comparación: si hay que cambiarlo,
 > se versiona aquí con fecha y motivo y se repiten todas las mediciones.
 
-- **Estado:** borrador (pendiente de aprobación humana)
+- **Estado:** aprobado (2026-10-30, por la usuaria)
 - **Fecha:** 2026-10-30
 - **Rama base (Playwright):** `main`
 - **Rama candidata (`e2e`):** `exp/e2e-agentic`
@@ -132,3 +132,4 @@ Un fichero por ejecución en `runs/<runner>/<feature>/run-NN.json`:
 |---|---|---|
 | 2026-10-30 | Versión inicial | — |
 | 2026-10-30 | Node 24.x → 26.x (§2) | La máquina de medición tiene Node 26.13.0 (LTS instalado para cumplir el requisito de `e2e@0.21.3`). Cambio hecho en borrador, antes de cualquier medición. |
+| 2026-10-30 | Protocolo aprobado; `spec_commit` de `smoke_navigation` = `ad80296` | Aprobación humana. `products_api` y `cart` aún no tienen spec: su `spec_commit` se congela al aprobarse su spec, antes de medirlas. |
