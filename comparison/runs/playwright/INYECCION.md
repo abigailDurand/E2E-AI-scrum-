@@ -13,8 +13,8 @@ los dos runners**: así cualquier diferencia en M1/M6 es del runner, no del
 mecanismo. Además cubre los tests de API, que hacen las peticiones desde Node y
 no pasarían por una intercepción del navegador (`page.route` / `browser.route`).
 
-- **Script:** `scripts/fault-proxy.mjs` (pendiente de implementar; se escribe
-  y se prueba antes de la primera inyección).
+- **Script:** `scripts/fault-proxy.mjs` (probado el 2026-10-30: control `FAULT=none`
+  con los 7 tests de `smoke_navigation` de Playwright en verde; cada fallo comprobado con curl).
 - **Arranque:** `FAULT=<ID> node scripts/fault-proxy.mjs` → escucha en
   `http://127.0.0.1:8787`. Sin `FAULT` (o `FAULT=none`) solo reenvía.
 - **Siempre, con o sin fallo:** reenvía a la tienda con su `Host`, quita la
@@ -44,7 +44,7 @@ no pasarían por una intercepción del navegador (`page.route` / `browser.route`
 | F-4 | products_api | `GET /products/<handle>.js` (cualquier handle) → **500** con cuerpo `{"error":"injected"}`, sin reenviar. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @PAPI-` |
 | F-5 | cart | `POST /cart/add.js` → **200** con JSON de línea plausible (`id` y `quantity` de la petición) **sin reenviar**; `POST /cart/add` (formulario) → **302** a `/cart` sin reenviar. El carrito real (`/cart.js`) sigue vacío. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
 | F-6 | cart | `POST /cart/change(.js)` y `POST /cart/update(.js)` → **no se reenvían**: las `.js` responden 200 con el `/cart.js` actual de la tienda (mismas cookies); las de formulario, 302 a `/cart`. La cantidad pedida no se aplica y el total no cambia. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
-| F-7 | cart | Variantes agotadas (`brown-shades` 1063105029 y `white-sandals` 611940609, observadas el 2026-10-30): `"available":false` → `true` en `/products.json`, `/products/<handle>.js` y en el JSON del producto incrustado en la ficha HTML (su script habilita el botón "Add to Cart" en lugar de "Sold Out"). `/cart/add.js` se reenvía tal cual (la tienda real lo rechaza). | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
+| F-7 | cart | Variantes agotadas (`brown-shades` 1063105029 y `white-sandals` 611940609, observadas el 2026-10-30): `"available":false` → `true` en `/products.json`, `/products/<handle>.js` y en el JSON del producto incrustado en la ficha HTML (su script habilita el botón "Add to Cart" en lugar de "Sold Out"). `/cart/add.js` se reenvía tal cual. Ojo: la tienda real **acepta** añadir una variante agotada por API (comprobado el 2026-10-30, 200 y entra en `/cart.js`); el fallo inyectado es la parte de UI y de `available`. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
 | F-M | cart (ficha de producto) | En el HTML de `/products/*`: el botón `<input id="add" value="Add To Cart">` pasa a `value="Add to Bag"` y el texto que pone su script (`val('Add to Cart')`) también. Mide M6, no M1. | `BASE_URL=http://127.0.0.1:8787 npx playwright test --grep @CART-` |
 
 ## F-M: cómo se mide M6
