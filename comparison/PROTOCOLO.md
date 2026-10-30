@@ -18,6 +18,21 @@ suite sin perder capacidad de detectar regresiones?
 - **H0:** `e2e` no es mejor que Playwright en la puntuación ponderada (§5).
 - **H1:** `e2e` supera los gates (§4) y obtiene mayor puntuación ponderada.
 
+**Qué se compara exactamente:** `e2e` usa Playwright por debajo
+(`@e2e-dev/web` depende de `playwright-core`; en este proyecto ambos runners
+comparten la misma copia, 1.64.1). El motor y el navegador son, por tanto, los
+mismos. Lo que se compara es la capa de encima: Playwright Test con locators
+escritos a mano frente al runner de `e2e`, en el que un modelo decide las
+acciones (`agent.act`), con su caché de repeticiones. La pregunta de fondo es
+si merece la pena poner una capa de IA encima de Playwright.
+
+**Límites conocidos:** una sola feature (7 tests, 2 fallos inyectados), así que
+el resultado es orientativo; con caché y sin cambios de UI, `e2e` repite
+acciones grabadas, por lo que la IA solo actúa cuando algo cambia (inyecciones
+y F-M); la detección exige `expect` exacto en ambos runners (§4, G1); en ambas
+ramas los tests los escribe el mismo pipeline de Claude; y el resultado vale
+para `e2e@0.21.3`.
+
 ## 2. Variables controladas
 
 Lo único que cambia entre ramas es **el runner de los tests**. Se mantiene igual:
@@ -167,3 +182,4 @@ escribe `RESULTADOS.md`. Si faltan ejecuciones, el resultado sale como
 | 2026-10-30 | §2: todas las mediciones de ambos runners pasan por el proxy local; la caché de `e2e` se calienta con un control por el proxy | En el ensayo, la caché de `e2e` grabada contra la tienda no se repitió por el proxy (`6 missed`): M1 habría ido en vivo y M2 con caché, midiendo `e2e` de dos formas. Pasar todo por el proxy lo iguala (Playwright no tiene caché y no cambia). Sin mediciones todavía. |
 | 2026-10-30 | Alcance reducido a `smoke_navigation` (features.json); F-3…F-7 fuera de alcance; F-M redefinido: enlace "Catalog" → "Shop" | Decisión humana: comparar una sola feature, la ya ensayada y con `agent.act` (la IA trabaja en cada test). El F-M anterior (botón "Add to Cart") no lo usa ningún test de esta feature (0/0 en ambos runners) y M6 no mediría nada. M1 queda con F-1 y F-2: G1 (≥ 90 %) exige detectar los dos. Sin mediciones todavía. |
 | 2026-10-30 | §3/§7: M3 cuenta solo el coste del modelo del runner (DeepSeek en `e2e`, 0 en Playwright); los tokens de Claude de los subagentes quedan fuera en ambos runners | Decisión humana. El pipeline de Playwright (2026-10-27) no registró los tokens de Claude, así que no se pueden comparar de forma justa. Ambos runners usan el mismo pipeline de Claude, por lo que excluirlo no favorece a ninguno. Ya existen las mediciones de Playwright (coste 0); `e2e` sin medir. |
+| 2026-10-30 | §1: aclaración de qué se compara (`e2e` usa `playwright-core`; se compara la capa agéntica y el runner, no el motor) y límites conocidos | Decisión humana tras revisar las dependencias. Solo aclara el alcance; no cambia métricas, pesos, gates ni mediciones. |
